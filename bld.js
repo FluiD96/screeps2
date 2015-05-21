@@ -1,3 +1,10 @@
+var getSize = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
 for(var name in Game.creeps) 
 {
 	var creep = Game.creeps[name];
@@ -93,11 +100,66 @@ for(var name in Game.creeps)
 	    
     }
 }
+
+
+
+var src = creep.room.find(FIND_MY_STRUCTURES);
+	    if(creep.room.find(FIND_MY_STRUCTURES).length > 0)
+	    {
+	        
+	        for(var i in src)
+	        {
+	            for(var k in Game.spawns)
+	            {
+	            var path = creep.room.findPath(Game.spawns[k].pos, src[i].pos,{ignoreCreeps: true});
+	            for(var e in path)
+	            {
+	                var found = creep.room.lookAt(path[e].x, path[e].y);
+	                for(var t in found)
+	                {
+	                    
+	                if((found[0].type != 'constructionSite') && (found[0].type != 'structure')&&(found[0].type == 'terrain'))
+	                {
+	                    creep.room.createConstructionSite(path[e].x, path[e].y, STRUCTURE_ROAD);
+	                    break;
+	                }
+	                
+	            }
+	  	    }
+	    }
+	    
+    }
+}
+
+
+
+
+	
+	    
+	}
 	for(var name in Game.spawns)
 	    {
-	        var spwn = Game.spawns[name];
-	        if(spwn.energy >100)
+	        if(Game.spawns[name].memory.extensions == undefined)
 	        {
+	            Game.spawns[name].memory.extensions={};
+	        }
+	        
+	        var spwn = Game.spawns[name];
+	        if(spwn.energy > 5700)
+	        {
+	            var canbe = 0;
+	            
+	            for(var b in spwn.memory.extensions)
+	            {
+	                if(creep.room.lookAt(spwn.memory.extensions[b].posit)[0].type == 'structure')
+	                {
+	                   if(creep.room.lookAt(spwn.memory.extensions[b].posit)[0].structure.energy >198)
+	                   {
+	                       canbe++
+	                       console.log(canbe);
+	                   }
+	                }
+	            }
 	            var look = spwn.room.lookAtArea(spwn.pos.y-4, spwn.pos.x-4, spwn.pos.y+4, spwn.pos.x+4);
 	            for(var i in look)
 	            {
@@ -106,19 +168,26 @@ for(var name in Game.creeps)
 	                    for(var w in look[i][k])
 	                    {
 	                        
-	                        if (look[i][k][w].type == 'terrain')
+	                        if (((look[i][k][w].type == 'terrain')&&(Memory.exttim < 10)&&(getSize(spwn.memory.extensions)<3))||((canbe == getSize(spwn.memory.extensions))&&(getSize(spwn.memory.extensions)<3)))
 	                    {
-	                    console.log(look[i][k][w].type, ' ', creep.name)
-	                    creep.room.createConstructionSite([k], [i], STRUCTURE_EXTENSION)
-	                    Memory.exttim = 700;
+	                    var kx = parseInt(k);
+	                    var ky = parseInt(i);
+	                    console.log(creep.room.createConstructionSite(kx, ky, STRUCTURE_EXTENSION))
+	                    creep.room.createConstructionSite(kx, ky, STRUCTURE_EXTENSION)
+	                    
+                        
+                        if(creep.room.createConstructionSite(kx, ky, STRUCTURE_EXTENSION) == 0)
+                        {
+                        var sz = getSize(spwn.memory.extensions);
+                        spwn.memory.extensions[sz]={};
+                        spwn.memory.extensions[sz].posit = {x: kx, y: ky};
+                        Memory.exttim = 1300;
 	                    break;
+                        }
 	                    }
 	                    }
 	                }
-	                    
 	            }
 	        }
 	    }
-	    
-	}
 }
